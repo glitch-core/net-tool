@@ -161,7 +161,7 @@
             }
 
             let base = 0;
-            let result = `====[User Input]====\nNetwork Address: ${baseIp}.0\nNumber of Subnetworks: ${subnetCount}\nNumber of Hosts Per Subnetwork: ${arrayOfTotalHostNumbers.join(", ")}\n\n====[Subnets INFO]=====================\n`;
+            let result = `====[User Input]====\nNetwork Address: ${baseIp}.0\nNumber of Subnetworks: ${subnetCount}\nNumber of Total Hosts Per Subnetwork: ${arrayOfTotalHostNumbers.join(", ")}\n\n====[Subnets INFO]=====================\n`;
 
             for (let i = 0; i < arrayOfTotalHostNumbers.length; i++) {
                 let subnetSize = arrayOfTotalHostNumbers[i];
@@ -177,7 +177,8 @@
 
             if ((255 - base) > 0) {
                 result += `\n====[Leftovre Network]=================\n`;
-                result += `   Number of Addresses Available: ${255 - base}\n`;
+                result += `   Number of Total Addresses Available: ${255 - base}\n`;
+                result += `   Number of Useable Addresses Available: ${255 - base - 2}\n`;
                 result += `   Network Address: ${baseIp}.${base}\n`;
                 result += `   Broadcast Address: ${baseIp}.255\n`;
                 result += `=======================================\n`;
