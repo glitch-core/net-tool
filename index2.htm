@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SubNetter PRO - Green Theme</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #e8f5e9;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background-color: #101110;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgb(231, 231, 231);
+      max-width: 600px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      font-size: 28px;
+      text-align: center;
+      color: #28a745;
+      margin-bottom: 5px;
+    }
+
+    p {
+      text-align: center;
+      color: rgb(199, 199, 199);
+      font-size: 14px;
+    }
+
+    label {
+      font-weight: 600;
+      display: block;
+      margin: 16px 0 6px;
+      color: #03a100;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #c8e6c9;
+      border-radius: 8px;
+      box-sizing: border-box;
+      transition: border-color 0.3s;
+    }
+
+    input:focus {
+      border-color: #66bb6a;
+      outline: none;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      background-color: #28a745;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    .result {
+      background-color: #f1f8f4;
+      border-left: 5px solid #28a745;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .result h3 {
+      margin-top: 0;
+      font-size: 18px;
+      color: #28a745;
+    }
+
+    .result p {
+      margin: 5px 0;
+      font-size: 14px;
+      color: #333;
+    }
+
+    #disclaimer {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #777;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 20px;
+      }
+
+      input,
+      button {
+        font-size: 15px;
+      }
+
+      .result h3 {
+        font-size: 16px;
+      }
+
+      .result p {
+        font-size: 13px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>SubNetter PRO</h1>
+    <p>By Ibraham Khalid</p>
+
+    <div id="disclaimer">
+      <p><strong>Disclaimer:</strong><br />
+        This tool is for educational purposes only.<br />
+        The author is not responsible for misuse or any consequences.<br />
+        Use responsibly.
+      </p>
+    </div>
+
+    <div class="form-container">
+      <label for="networkAddress">Network Address (Class C, e.g. 192.168.1.0):</label>
+      <input type="text" id="networkAddress" placeholder="Enter Network Address" />
+
+      <label for="hosts">Number of Usable Hosts:</label>
+      <input type="number" id="hosts" placeholder="Enter Number of Usable Hosts" />
+
+      <button onclick="calculateSubnets()">Calculate</button>
+    </div>
+
+    <div id="results">
+      <!-- Results go here -->
+    </div>
+    <br><br><br><br>
+  </div>
+
+  <script>
+    function calculateSubnets() {
+      let networkAddress = document.getElementById("networkAddress").value.trim();
+      const numberOfHostsInput = parseInt(document.getElementById("hosts").value);
+      const multiplyOfTwo = [2, 4, 8, 16, 32, 64, 128, 256];
+      let subnet = null;
+      let subnetMask = "";
+      let networkCidr = 0;
+      let hostBits = 0;
+      let borrowedBits = 0;
+      let numberOfSubnets = 0;
+
+      if (!networkAddress || isNaN(numberOfHostsInput) || numberOfHostsInput < 2 || numberOfHostsInput > 126) {
+        alert("Invalid input! Please check your network address or number of usable hosts (2-126).");
+        return;
+      }
+
+      const numberOfHosts = numberOfHostsInput + 2;
+      const octets = networkAddress.split(".");
+      if (octets.length !== 4) {
+        alert("Invalid IP address format!");
+        return;
+      }
+
+      octets[3] = "0";
+      networkAddress = octets.join(".");
+
+      let baseOctet = parseInt(octets[3]);
+      const networkIpAddress = octets.slice(0, 3).join(".");
+
+      for (let i = 0; i < multiplyOfTwo.length; i++) {
+        if (multiplyOfTwo[i] >= numberOfHosts) {
+          subnet = multiplyOfTwo[i];
+          hostBits = i + 1;
+          break;
+        }
+      }
+
+      borrowedBits = 8 - hostBits;
+      networkCidr = 24 + borrowedBits;
+      numberOfSubnets = Math.pow(2, borrowedBits);
+
+      switch (networkCidr) {
+        case 24: subnetMask = "255.255.255.0"; break;
+        case 25: subnetMask = "255.255.255.128"; break;
+        case 26: subnetMask = "255.255.255.192"; break;
+        case 27: subnetMask = "255.255.255.224"; break;
+        case 28: subnetMask = "255.255.255.240"; break;
+        case 29: subnetMask = "255.255.255.248"; break;
+        case 30: subnetMask = "255.255.255.252"; break;
+        case 31: subnetMask = "255.255.255.254"; break;
+        case 32: subnetMask = "255.255.255.255"; break;
+        default: subnetMask = "Invalid"; break;
+      }
+
+      const totalHosts = Math.pow(2, (32 - networkCidr));
+
+      let resultHTML = `
+        <div class="result">
+            <h3>[User Input]</h3>
+            <p><strong>Corrected Network Address:</strong> ${networkAddress}</p>
+            <p><strong>Number of Usable Hosts (Requested):</strong> ${numberOfHostsInput}</p>
+            <p><strong>Total Hosts (Required):</strong> ${numberOfHosts}</p>
+            <hr>
+            <h3>[Subnetwork Info]</h3>
+            <p><strong>Subnets Available:</strong> ${numberOfSubnets}</p>
+            <p><strong>Subnet Mask:</strong> ${subnetMask}</p>
+            <p><strong>Network CIDR:</strong> /${networkCidr}</p>
+            <p><strong>Total Hosts:</strong> ${totalHosts}</p>
+            <p><strong>Usable Hosts:</strong> ${totalHosts - 2}</p>
+        </div>`;
+
+      let currentOffset = 0;
+      for (let i = 0; i < numberOfSubnets; i++) {
+        let base = baseOctet + currentOffset;
+        if (base + totalHosts - 1 > 255) break;
+
+        resultHTML += `
+          <div class="result">
+              <h3>[Subnet #${i + 1}]</h3>
+              <p><strong>Network:</strong> ${networkIpAddress}.${base}</p>
+              <p><strong>Broadcast:</strong> ${networkIpAddress}.${base + totalHosts - 1}</p>
+          </div>`;
+        currentOffset += totalHosts;
+      }
+
+      document.getElementById("results").innerHTML = resultHTML;
+    }
+  </script>
+</body>
+
+</html>

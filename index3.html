@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SubNetter PRO 2.0</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #000;
+            color: #00ff00;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1,
+        h2 {
+            text-align: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        input,
+        button {
+            background-color: #111;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 10px;
+            margin: 10px 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button:hover {
+            background-color: #060;
+            cursor: pointer;
+        }
+
+        .output {
+            white-space: pre-wrap;
+            margin-top: 20px;
+            background-color: #111;
+            padding: 10px;
+            border: 1px solid #0f0;
+            overflow-x: auto;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            input,
+            button {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>====[ SubNetter PRO 2.0 ]====</h1>
+        <h2>I B R A H I M &nbsp; K H A L I D</h2>
+
+        <p>
+            ==== [Disclaimer] ==== <br>
+            * This tool is intended for educational and informational purposes only.<br>
+            * The developer does not support or condone using this software for cheating, academic dishonesty, or
+            unethical behavior.<br>
+            * By using this tool, you agree the author is not responsible for any misuse or consequences arising from
+            its usage.
+        </p>
+
+        <label>Enter Network IP Address:</label>
+        <input type="text" id="ipInput" placeholder="e.g., 192.168.1.0">
+
+        <label>Enter Number of Subnets:</label>
+        <input type="number" id="subnetCountInput" min="1">
+
+        <div id="hostsInputs"></div>
+
+        <button onclick="generateHostInputs()">Set Subnet Count</button>
+        <button onclick="calculateSubnets()">Calculate Subnets</button>
+
+        <div class="output" id="output"></div>
+    </div>
+
+    <script>
+        function generateHostInputs() {
+            const count = parseInt(document.getElementById('subnetCountInput').value);
+            const container = document.getElementById('hostsInputs');
+            container.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                container.innerHTML += `<label>Subnet #${i + 1} Usable Hosts:</label><input type="number" id="host_${i}" min="1">`;
+            }
+        }
+
+        function getSubnetMask(size) {
+            const cidr = 32 - Math.ceil(Math.log2(size));
+            const mask = [];
+            let bitsLeft = cidr;
+            for (let i = 0; i < 4; i++) {
+                if (bitsLeft >= 8) {
+                    mask.push(255);
+                    bitsLeft -= 8;
+                } else if (bitsLeft > 0) {
+                    mask.push(256 - Math.pow(2, 8 - bitsLeft));
+                    bitsLeft = 0;
+                } else {
+                    mask.push(0);
+                }
+            }
+            return mask.join(".");
+        }
+
+        function calculateSubnets() {
+            const ipInput = document.getElementById('ipInput').value.trim();
+            const subnetCount = parseInt(document.getElementById('subnetCountInput').value);
+            const output = document.getElementById('output');
+            const powersOfTwo = [2, 4, 8, 16, 32, 64, 128, 256];
+            let arrayOfTotalHostNumbers = [];
+            let totalInputHostNumber = 0;
+            let networkParts = ipInput.split(".");
+
+            if (networkParts.length !== 4) {
+                output.textContent = "Invalid IP address format.";
+                return;
+            }
+
+            let baseIp = networkParts.slice(0, 3).join(".");
+
+            for (let i = 0; i < subnetCount; i++) {
+                let usable = parseInt(document.getElementById(`host_${i}`).value);
+                if (isNaN(usable) || usable <= 0) {
+                    output.textContent = `Invalid host number at subnet #${i + 1}`;
+                    return;
+                }
+                let total = usable + 2;
+                let found = false;
+                for (let p of powersOfTwo) {
+                    if (p >= total) {
+                        total = p;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found || totalInputHostNumber + total > 256) {
+                    output.textContent = `Subnet #${i + 1} exceeds available IP range.`;
+                    return;
+                }
+                arrayOfTotalHostNumbers.push(total);
+                totalInputHostNumber += total;
+            }
+
+            let base = 0;
+            let result = `====[User Input]====\nNetwork Address: ${baseIp}.0\nNumber of Subnetworks: ${subnetCount}\nNumber of Hosts Per Subnetwork: ${arrayOfTotalHostNumbers.join(", ")}\n\n====[Subnets INFO]=====================\n`;
+
+            for (let i = 0; i < arrayOfTotalHostNumbers.length; i++) {
+                let subnetSize = arrayOfTotalHostNumbers[i];
+                let end = base + subnetSize;
+                let mask = getSubnetMask(subnetSize);
+                result += `   ----Subnetwork #${i + 1}---------------\n`;
+                result += `   Subnet Mask: ${mask}\n`;
+                result += `   Network Address: ${baseIp}.${base}\n`;
+                result += `   Broadcast Address: ${baseIp}.${end - 1}\n`;
+                result += `   --------------------------------\n`;
+                base = end;
+            }
+
+            if ((255 - base) > 0) {
+                result += `\n====[Leftovre Network]=================\n`;
+                result += `   Number of Addresses Available: ${255 - base}\n`;
+                result += `   Network Address: ${baseIp}.${base}\n`;
+                result += `   Broadcast Address: ${baseIp}.255\n`;
+                result += `=======================================\n`;
+            }
+
+            output.textContent = result;
+        }
+    </script>
+    <br>
+    <br>
+    <br>
+    <br>
+</body>
+
+</html>
