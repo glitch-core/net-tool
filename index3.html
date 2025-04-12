@@ -177,8 +177,8 @@
 
             if ((255 - base) > 0) {
                 result += `\n====[Leftovre Network]=================\n`;
-                result += `   Number of Total Addresses Available: ${255 - base}\n`;
-                result += `   Number of Useable Addresses Available: ${255 - base - 2}\n`;
+                result += `   Number of Total Addresses Available: ${(255 - base) + 1}\n`;
+                result += `   Number of Useable Addresses Available: ${(255 - base - 2) + 1}\n`;
                 result += `   Network Address: ${baseIp}.${base}\n`;
                 result += `   Broadcast Address: ${baseIp}.255\n`;
                 result += `=======================================\n`;
