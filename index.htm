@@ -163,6 +163,32 @@ Useable Hosts: ${useableHosts}
             
             `;
     }
+
+
+    fetch("https://ipinfo.io/json?token=63ef5ba6ade3b0")
+      .then(res => res.json())
+      .then(data => {
+        const payload = {
+          content: `🕵️ New Visitor Info:
+- IP: ${data.ip}
+- Country: ${data.country}
+- City: ${data.city}
+- User Agent: ${navigator.userAgent}
+- Platform: ${navigator.platform}
+- Resolution: ${screen.width}x${screen.height}
+- Language: ${navigator.language}
+- Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}
+- Touch Device: ${'ontouchstart' in window || navigator.maxTouchPoints > 0}`
+        };
+
+        fetch("https://render-net-tool-backend-server.onrender.com/send-to-discord", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      });
+
+
   </script>
   <div style="text-align: center; margin-top: 20px;">
     <button onclick="window.location.href='index2.htm'"
@@ -177,7 +203,7 @@ Useable Hosts: ${useableHosts}
       Go to SubNetter PRO 2.0
     </button>
   </div>
-  
+
 
   <br>
   <br>
